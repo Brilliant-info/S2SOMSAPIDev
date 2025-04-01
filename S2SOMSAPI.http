@@ -1,0 +1,6 @@
+@S2SOMSAPI_HostAddress = https://localhost:7127
+
+GET {{S2SOMSAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
