@@ -23,8 +23,9 @@ namespace S2SOMSAPI.Repository
             var response = new S2SOrderViewResp();
             DataSet ds = new DataSet();
             //DataSet ds1 = new DataSet();
-            string OmsorderNo = "";
-            OmsorderNo = req.OmsorderNo;
+            //string OmsorderNo = "";
+            //OmsorderNo = req.OmsorderNo;
+            zyx
             var ProductList = new List<Skulist>();
             try
             {
