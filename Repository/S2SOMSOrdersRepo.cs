@@ -1,9 +1,10 @@
 ﻿using S2SOMSAPI.Model;
 using S2SOMSAPI.Repository.Interface;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
+using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Http;
 
 namespace S2SOMSAPI.Repository
 {
@@ -16,7 +17,7 @@ namespace S2SOMSAPI.Repository
         public S2SOMSOrdersRepo(IConfiguration configuration)
         {
             _configuration = configuration;
-            _connstr = _configuration.GetConnectionString("GWC_ConnectionString");
+            _connstr = _configuration.GetConnectionString("GWC_ConnectionString")!;
         }
 
         DataSet ds = new DataSet();
@@ -24,23 +25,22 @@ namespace S2SOMSAPI.Repository
         public async Task<S2SOrderListRespn> GetS2SOrders(S2SOrderListReq para)
         {
             var S2SOrdersList = new List<S2SOrders>();
-            var Response = new S2SOrderListRespn();
-            
+            var Response = new S2SOrderListRespn();            
             try
             {
                 ds = await GetOrders(para);
-                if (ds != null && ds.Tables[1].Rows.Count > 0)
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[1].Rows.Count > 0)
                 {
                     
                     foreach (DataRow row in ds.Tables[1].Rows)
                     {
-                        var S2SOrderNo = row["S2SOrderNo"].ToString();
-                        var WincashOrderNo = row["WincashOrderNo"].ToString();
-                        var Ordertype = row["Ordertype"].ToString();
-                        var Sourcestore = row["Sourcestore"].ToString();
-                        var DestinationStore = row["DestinationStore"].ToString();
-                        var Performedby = row["Performedby"].ToString();
-                        var Receivedby = row["Receivedby"].ToString();
+                        var S2SOrderNo = row["S2SOrderNo"]?.ToString() ?? "";
+                        var WincashOrderNo = row["WincashOrderNo"]?.ToString() ?? "";
+                        var Ordertype = row["Ordertype"]?.ToString() ?? "";
+                        var Sourcestore = row["Sourcestore"]?.ToString() ?? "";
+                        var DestinationStore = row["DestinationStore"]?.ToString() ?? "";
+                        var Performedby = row["Performedby"]?.ToString() ?? "";
+                        var Receivedby = row["Receivedby"]?.ToString() ?? "";
 
                         var S2SOrders = new S2SOrders
                         {
@@ -55,21 +55,25 @@ namespace S2SOMSAPI.Repository
 
                         S2SOrdersList.Add(S2SOrders);
                     }
-                    int statuscode = 200;
-                    string status = "success";
-                    Response.statuscode = statuscode;
-                    Response.status = status;
+                    Response.statuscode = 200;
+                    Response.status = "success";
                     Response.S2SOrders = S2SOrdersList;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Order Not Found";
                 }
             }
             catch (Exception ex)
             {
-                
+                Response.statuscode = 505;
+                Response.status = "Someting Went Wrong";
             }
             finally 
             { 
+                ds.Dispose();
             }
-
             return Response;
         }
 
@@ -88,8 +92,7 @@ namespace S2SOMSAPI.Repository
         } 
 
         public DataSet Return_dataset(string procname, params SqlParameter[] param)
-        {
-            
+        {            
             using SqlConnection conn = new SqlConnection(_connstr);
             try
             {
@@ -102,7 +105,6 @@ namespace S2SOMSAPI.Repository
                         da.SelectCommand.Parameters.Add(p);
                     }
                 }
-                //conn.Open();
                 if (conn.State == ConnectionState.Closed)
                 {
                     conn.Open();
