@@ -25,7 +25,7 @@ namespace S2SOMSAPI.Repository
             //DataSet ds1 = new DataSet();
             //string OmsorderNo = "";
             //OmsorderNo = req.OmsorderNo;
-            zyxydudhcisdfgngfdsaedfg
+            zyxydudhcisdfgngfdsaedfgsadfghjkl
             var ProductList = new List<Skulist>();
             try
             {
