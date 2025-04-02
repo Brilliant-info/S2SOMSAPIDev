@@ -72,5 +72,11 @@
 
 
     }
+
+    public class SaveReqResponce
+    {
+        public int statuscode { get; set; }
+        public string status { get; set; }
+    }
 }
 

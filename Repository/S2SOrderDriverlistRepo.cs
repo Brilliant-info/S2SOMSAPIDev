@@ -1,8 +1,10 @@
 ﻿using S2SOMSAPI.Model;
 using S2SOMSAPI.Repository.Interface;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using S2SOrderDriverlist = S2SOMSAPI.Model.S2SOrderDriverlist;
+using Microsoft.AspNetCore.Http;
+using Azure;
 
 namespace S2SOMSAPI.Repository
 {
@@ -11,6 +13,7 @@ namespace S2SOMSAPI.Repository
         private readonly IConfiguration _configuration;
         private readonly string _connstr;
         public DriverlistReq reqpara;
+        public AssignDriverReq AssignReq;
         DataSet ds = new DataSet();
 
         SqlParameter[] Param;
@@ -18,7 +21,7 @@ namespace S2SOMSAPI.Repository
         public S2SOrderDriverlistRepo(IConfiguration configuration)
         {
             _configuration = configuration;
-            _connstr = configuration.GetConnectionString("GWC_ConnectionString");
+            _connstr = configuration.GetConnectionString("GWC_ConnectionString")!;
         }
         public async Task<S2SOrderDriverlistResp> Driverlist(DriverlistReq reqpara)
         {
@@ -26,15 +29,14 @@ namespace S2SOMSAPI.Repository
             var Driverlist = new List<S2SOrderDriverlist>();
             try
             {
-
                 ds = await GetDriverlist(reqpara);
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
                     foreach (DataRow row in ds.Tables[0].Rows)
                     {
-                        var DriverName = row["DriverName"].ToString();
-                        var ContactNo = row["ContactNo"].ToString();
-                        var EmailID = row["EmailID"].ToString();
+                        var DriverName = row["DriverName"]?.ToString() ?? "";
+                        var ContactNo = row["ContactNo"]?.ToString() ?? "";
+                        var EmailID = row["EmailID"]?.ToString() ?? "";
 
                         var S2SOrderDriverlist = new S2SOrderDriverlist
                         {
@@ -45,17 +47,20 @@ namespace S2SOMSAPI.Repository
 
                         Driverlist.Add(S2SOrderDriverlist);
                     }
-
-                    int statuscode = 200;
-                    string status = "success";
-                    Response.statuscode = statuscode;
-                    Response.status = status;
+                    Response.statuscode = 200;
+                    Response.status = "success";
                     Response.S2SOrderDriverlist = Driverlist;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Driver Not found";
                 }
             }
             catch
             {
-
+                Response.statuscode = 505;
+                Response.status = "Something Went Wrong";
             }
             finally
             {
@@ -76,8 +81,7 @@ namespace S2SOMSAPI.Repository
 
         public DataSet Return_dataset(string procname, params SqlParameter[] param)
         {
-
-            using SqlConnection conn = new SqlConnection(_connstr);
+            SqlConnection conn = new SqlConnection(_connstr);
             try
             {
                 SqlDataAdapter da = new SqlDataAdapter(procname, conn);
@@ -89,13 +93,11 @@ namespace S2SOMSAPI.Repository
                         da.SelectCommand.Parameters.Add(p);
                     }
                 }
-                //conn.Open();
                 if (conn.State == ConnectionState.Closed)
                 {
                     conn.Open();
                 }
                 da.Fill(ds);
-
             }
             catch (Exception ex)
             {
@@ -110,7 +112,94 @@ namespace S2SOMSAPI.Repository
             }
             return ds;
         }
-    }
-    
 
- }
+
+        #region New Code for Driver Assign
+        public async Task<SaveReqResponce> AssignDriver(AssignDriverReq AssignReq)
+        {
+            var Response = new SaveReqResponce();
+            string result = "";
+            Param = new SqlParameter[]  
+                {
+            new SqlParameter("@ObjectName", AssignReq.ObjectName),
+            new SqlParameter("@ReferenceID", AssignReq.ReferenceID),
+            new SqlParameter("@DriverId", AssignReq.DriverId),
+            new SqlParameter("@AssignBy", AssignReq.AssignBy),
+            new SqlParameter("@VehicleDetail", AssignReq.VehicleDetail),            
+            };
+            result = await Return_ScalerValues("S2S_AssignDriver", Param);
+
+            if(result == "Success")
+            {
+                Response.statuscode = 200;
+                Response.status = "Success";
+            }
+            else if(result == "Order Already assigned")
+            {
+                Response.statuscode = 601;
+                Response.status = "Order Already assigned";
+            }
+            else if(result == "Status Not Valid")
+            {
+                Response.statuscode = 602;
+                Response.status = "Can Not Assign Driver for Pick and Drop Status";
+            }
+            else
+            {
+                Response.statuscode = 603;
+                Response.status = "Something went wrong";
+            }            
+            return Response;
+        }
+
+        public async Task<string> Return_ScalerValues(string ProcName, params SqlParameter[] Param)
+        {
+            string result = "";
+            using (SqlConnection conn = new SqlConnection(_connstr))
+            {
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(ProcName, conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    if (Param != null)
+                    {
+                        foreach (SqlParameter p in Param)
+                        {
+                            cmd.Parameters.Add(p);
+                        }
+                    }
+                    if (conn.State == ConnectionState.Closed)
+                    {
+                        await conn.OpenAsync();
+                    }
+                    var returnval = cmd.ExecuteScalar();
+                    if (returnval != null)
+                    {
+                        result = returnval.ToString();
+                    }
+                    else
+                    {
+                        result = "Fail";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
+                finally
+                {
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        await conn.CloseAsync();
+                    }
+                }
+            }
+            return result;
+        }
+
+
+        #endregion
+    }
+
+
+}
