@@ -1,10 +1,8 @@
 ﻿using S2SOMSAPI.Model;
 using S2SOMSAPI.Repository.Interface;
 using System.Data;
-using System.Linq.Expressions;
-using System.Security.Cryptography;
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Http;
+
 
 namespace S2SOMSAPI.Repository
 {
