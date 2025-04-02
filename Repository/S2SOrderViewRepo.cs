@@ -1,7 +1,7 @@
 ﻿using S2SOMSAPI.Model;
 using S2SOMSAPI.Repository.Interface;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace S2SOMSAPI.Repository
 {
@@ -22,10 +22,7 @@ namespace S2SOMSAPI.Repository
         {
             var response = new S2SOrderViewResp();
             DataSet ds = new DataSet();
-            //DataSet ds1 = new DataSet();
-            //string OmsorderNo = "";
-            //OmsorderNo = req.OmsorderNo;
-            zyxydudhcisdfgngfdsaedfgsadfghjkljhgfd
+
             var ProductList = new List<Skulist>();
             try
             {

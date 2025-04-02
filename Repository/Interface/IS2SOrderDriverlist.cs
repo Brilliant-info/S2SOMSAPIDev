@@ -5,5 +5,6 @@ namespace S2SOMSAPI.Repository.Interface
     public interface IS2SOrderDriverlist
     {
         public  Task<S2SOrderDriverlistResp> Driverlist(DriverlistReq reqpara);
+        public Task<SaveReqResponce> AssignDriver(AssignDriverReq reqpara);
     }
 }

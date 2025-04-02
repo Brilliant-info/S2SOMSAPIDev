@@ -14,6 +14,7 @@ namespace S2SOMSAPI.Controllers
         public readonly IS2SOrderHistory _History;
         public readonly IS2SOrderDriverlist _Driver;
         public readonly IS2SOrderView _OrderView;
+       
 
         public S2SOMSOrderController(IS2SOMSOrders Injection, IS2SOrderHistory history , IS2SOrderDriverlist Driver, IS2SOrderView OrderView) 
         {
@@ -48,6 +49,13 @@ namespace S2SOMSAPI.Controllers
         public async Task<ActionResult> Driverlist(DriverlistReq reqpara)
         {
             var response = await _Driver.Driverlist(reqpara);
+            return Ok(response);
+        }
+
+        [HttpPost("S2SAssignDriver")]
+        public async Task<ActionResult> S2SAssignDriver(AssignDriverReq reqpara)
+        {
+            var response = await _Driver.AssignDriver(reqpara);
             return Ok(response);
         }
 

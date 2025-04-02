@@ -12,8 +12,10 @@ namespace S2SOMSAPI.Repository
     {
         private readonly IConfiguration _configuration;
         private readonly string _connstr;
+
         public S2SOrderListReq para;
         SqlParameter[] Param;
+
         public S2SOMSOrdersRepo(IConfiguration configuration)
         {
             _configuration = configuration;
