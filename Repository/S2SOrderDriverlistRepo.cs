@@ -14,6 +14,7 @@ namespace S2SOMSAPI.Repository
         private readonly string _connstr;
         public DriverlistReq reqpara;
         public AssignDriverReq AssignReq;
+       
         DataSet ds = new DataSet();
 
         SqlParameter[] Param;
@@ -118,37 +119,88 @@ namespace S2SOMSAPI.Repository
         public async Task<SaveReqResponce> AssignDriver(AssignDriverReq AssignReq)
         {
             var Response = new SaveReqResponce();
-            string result = "";
-            Param = new SqlParameter[]  
-                {
+            try
+            {
+                string result = "";
+                Param = new SqlParameter[]
+                    {
             new SqlParameter("@ObjectName", AssignReq.ObjectName),
             new SqlParameter("@ReferenceID", AssignReq.ReferenceID),
             new SqlParameter("@DriverId", AssignReq.DriverId),
             new SqlParameter("@AssignBy", AssignReq.AssignBy),
-            new SqlParameter("@VehicleDetail", AssignReq.VehicleDetail),            
-            };
-            result = await Return_ScalerValues("S2S_AssignDriver", Param);
+            new SqlParameter("@VehicleDetail", AssignReq.VehicleDetail),
+                };
+                result = await Return_ScalerValues("S2S_AssignDriver", Param);
 
-            if(result == "Success")
-            {
-                Response.statuscode = 200;
-                Response.status = "Success";
+                if (result == "Success")
+                {
+                    Response.statuscode = 200;
+                    Response.status = "Success";
+                }
+                else if (result == "Order Already assigned")
+                {
+                    Response.statuscode = 601;
+                    Response.status = "Order Already assigned";
+                }
+                else if (result == "Status Not Valid")
+                {
+                    Response.statuscode = 602;
+                    Response.status = "Can Not Assign Driver for Pick and Drop Status";
+                }
+                else
+                {
+                    Response.statuscode = 603;
+                    Response.status = "Something went wrong";
+                }
             }
-            else if(result == "Order Already assigned")
-            {
-                Response.statuscode = 601;
-                Response.status = "Order Already assigned";
-            }
-            else if(result == "Status Not Valid")
-            {
-                Response.statuscode = 602;
-                Response.status = "Can Not Assign Driver for Pick and Drop Status";
-            }
-            else
+            catch (Exception ex)
             {
                 Response.statuscode = 603;
                 Response.status = "Something went wrong";
-            }            
+            }
+            return Response;
+        }
+
+        public async Task<SaveReqResponce> RemoveAssignDriver(RemoveDriverAssignReq RemoveReq)
+        {
+            var Response = new SaveReqResponce();
+            try
+            {
+                string result = "";
+                Param = new SqlParameter[]
+                    {
+            new SqlParameter("@ObjectName", RemoveReq.ObjectName),
+            new SqlParameter("@ReferenceID", RemoveReq.ReferenceID),
+            new SqlParameter("@DriverId", RemoveReq.DriverId),
+                };
+                result = await Return_ScalerValues("S2S_RemoveAssignedDriver", Param);
+
+                if (result == "Success")
+                {
+                    Response.statuscode = 200;
+                    Response.status = "Success";
+                }
+                else if (result == "Order Not Assigned")
+                {
+                    Response.statuscode = 601;
+                    Response.status = "Order Not Assigned to Driver";
+                }
+                else if (result == "Can Not Remove")
+                {
+                    Response.statuscode = 602;
+                    Response.status = "Selected Order Not Available";
+                }
+                else
+                {
+                    Response.statuscode = 603;
+                    Response.status = "Error";
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.statuscode = 603;
+                Response.status = "Error";
+            }
             return Response;
         }
 

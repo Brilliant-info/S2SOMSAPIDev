@@ -42,4 +42,16 @@ namespace S2SOMSAPI.Model
         public long AssignBy {  get; set; }
         public string VehicleDetail { get; set; }
     }
+
+    public class RemoveDriverAssignReq
+    {
+        [Required(ErrorMessage = "ObjectName is required.")]
+        public string ObjectName { get; set; }
+
+        [Required(ErrorMessage = "ReferenceID is required.")]
+        public long ReferenceID { get; set; }
+
+        [Required(ErrorMessage = "DriverId is required.")]
+        public long DriverId { get; set; }
+    }
 }

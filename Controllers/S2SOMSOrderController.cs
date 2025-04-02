@@ -59,5 +59,12 @@ namespace S2SOMSAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost("S2SRemoveAssignDriver")]
+        public async Task<ActionResult> S2SRemoveAssignDriver(RemoveDriverAssignReq reqpara)
+        {
+            var response = await _Driver.RemoveAssignDriver(reqpara);
+            return Ok(response);
+        }
+
     }
 }
