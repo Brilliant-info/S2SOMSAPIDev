@@ -38,6 +38,16 @@ namespace S2SOMSAPI.Repository
                     string Receivedby = ds.Tables[0].Rows[0]["Receivedby"].ToString();
                     DateTime CreationDate = Convert.ToDateTime(ds.Tables[0].Rows[0]["CreationDate"]);
 
+                    // Assign fetched values to the response object
+                    response.WincashOrderNo = WincashOrderNumber;
+                    response.S2SOrderNo = S2SOrderNo;
+                    response.Status = Status;
+                    response.Sourcestore = Sourcestore;
+                    response.DestinationStore = DestinationStore;
+                    response.Performedby = Performedby;
+                    response.Receivedby = Receivedby;
+                    response.CreationDate = CreationDate;
+
 
                     foreach (DataRow row in ds.Tables[1].Rows)
                     {

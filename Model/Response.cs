@@ -42,7 +42,7 @@
         public string WincashOrderNo { get; set; }
         public string S2SOrderNo { get; set; }
         public string Status { get; set; }
-        public string Ordertype { get; set; }
+       // public string Ordertype { get; set; }
         public string Sourcestore { get; set; }
         public string DestinationStore { get; set; }
         public string Performedby { get; set; }
