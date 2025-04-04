@@ -14,7 +14,8 @@ namespace S2SOMSAPI.Repository
         private readonly string _connstr;
         public DriverlistReq reqpara;
         public AssignDriverReq AssignReq;
-       
+        //public AssignDriverlistReq reqpara;
+
         DataSet ds = new DataSet();
 
         SqlParameter[] Param;
@@ -35,12 +36,14 @@ namespace S2SOMSAPI.Repository
                 {
                     foreach (DataRow row in ds.Tables[0].Rows)
                     {
+                        var driverID = row["driverID"]?.ToString() ?? "";
                         var DriverName = row["DriverName"]?.ToString() ?? "";
                         var ContactNo = row["ContactNo"]?.ToString() ?? "";
                         var EmailID = row["EmailID"]?.ToString() ?? "";
 
                         var S2SOrderDriverlist = new S2SOrderDriverlist
                         {
+                            driverID = driverID,
                             DriverName = DriverName,
                             ContactNo = ContactNo,
                             EmailID = EmailID
@@ -251,6 +254,69 @@ namespace S2SOMSAPI.Repository
 
 
         #endregion
+
+        public async Task<S2SAssignDriverlistResp> AssignDriverlist(AssignDriverlistReq reqpara)
+        {
+            var Response = new S2SAssignDriverlistResp();
+            var ADriverlist = new List<S2SDriverlist>();
+            try
+            {
+                ds = await GetAssignDriverlist(reqpara);
+                if (ds != null && ds.Tables[0].Rows.Count > 0)
+                {
+                    foreach (DataRow row in ds.Tables[0].Rows)
+                    {
+                        var Id = row["Id"]?.ToString() ?? "";
+                        var AssignDate = row["AssignDate"]?.ToString() ?? ""; 
+                        var DriverId = row["DriverId"]?.ToString() ?? "";
+                        var DriverName = row["DriverName"]?.ToString() ?? "";
+                        var TrackDetails = row["TrackDetails"]?.ToString() ?? "";
+                        var ReferenceId = row["ReferenceId"]?.ToString() ?? "";
+
+                        var DriverList = new S2SDriverlist
+                        {
+                            Id = Id,
+                            AssignDate = AssignDate,
+                            DriverId = DriverId,
+                            DriverName = DriverName,
+                            TrackDetails = TrackDetails,
+                            ReferenceId = ReferenceId
+                        };
+
+                        ADriverlist.Add(DriverList);
+                    }
+                    Response.statuscode = 200;
+                    Response.status = "success";
+                    Response.S2SDriverlist = ADriverlist;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Driver Not found";
+                }
+            }
+            catch
+            {
+                Response.statuscode = 505;
+                Response.status = "Something Went Wrong";
+            }
+            finally
+            {
+
+            }
+            return Response;
+        }
+
+        public async Task<DataSet> GetAssignDriverlist(AssignDriverlistReq reqpara)
+        {
+            Param = new SqlParameter[]
+            {
+                new SqlParameter("ReferenceID",reqpara.ReferenceID),
+                new SqlParameter("objectName",reqpara.objectName)
+            };
+            return Return_dataset("AssignDriverlist", Param);
+        }
+
     }
 
 

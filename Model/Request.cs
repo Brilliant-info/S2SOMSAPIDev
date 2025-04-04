@@ -54,4 +54,15 @@ namespace S2SOMSAPI.Model
         [Required(ErrorMessage = "DriverId is required.")]
         public long DriverId { get; set; }
     }
+    public class AssignDriverlistReq
+    {
+        public int ReferenceID { get; set; }
+        public string objectName { get; set; }
+    }
+    public class S2SdocumentlistReq
+    {
+        public int ReferenceID { get; set; }
+        public int CompanyID { get; set; }
+        public string ObjectName { get; set; }
+    }
 }

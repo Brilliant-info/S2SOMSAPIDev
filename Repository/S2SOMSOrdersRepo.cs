@@ -34,6 +34,7 @@ namespace S2SOMSAPI.Repository
                     
                     foreach (DataRow row in ds.Tables[1].Rows)
                     {
+                        var Id = row["Id"]?.ToString() ?? "";
                         var S2SOrderNo = row["S2SOrderNo"]?.ToString() ?? "";
                         var WincashOrderNo = row["WincashOrderNo"]?.ToString() ?? "";
                         var Ordertype = row["Ordertype"]?.ToString() ?? "";
@@ -41,16 +42,19 @@ namespace S2SOMSAPI.Repository
                         var DestinationStore = row["DestinationStore"]?.ToString() ?? "";
                         var Performedby = row["Performedby"]?.ToString() ?? "";
                         var Receivedby = row["Receivedby"]?.ToString() ?? "";
+                        var Status = row["Status"]?.ToString() ?? "";
 
                         var S2SOrders = new S2SOrders
                         {
+                            Id = Id,
                             S2SOrderNo = S2SOrderNo,
                             WincashOrderNo = WincashOrderNo,
                             Ordertype = Ordertype,
                             Sourcestore = Sourcestore,
                             DestinationStore = DestinationStore,
                             Performedby = Performedby,
-                            Receivedby = Receivedby
+                            Receivedby = Receivedby,
+                            Status = Status
                         };
 
                         S2SOrdersList.Add(S2SOrders);
@@ -89,7 +93,76 @@ namespace S2SOMSAPI.Repository
             };
             return Return_dataset("GetS2SOrderList", Param);
 
-        } 
+        }
+
+        public async Task<S2SOrderDocumentListRespn> S2Sdocumentlist(S2SdocumentlistReq para)
+        {
+            var Getdocumentlist = new List<documentlist>();
+            var Response = new S2SOrderDocumentListRespn();
+            try
+            {
+                ds = await Getdocument(para);
+                if (ds != null && ds.Tables[0].Rows.Count > 0)
+                {
+
+                    foreach (DataRow row in ds.Tables[0].Rows)
+                    {
+                        var Id = row["Id"]?.ToString() ?? "";
+                        var DocumentName = row["DocumentName"]?.ToString() ?? "";
+                        var Description = row["Description"]?.ToString() ?? "";
+                        var DocumentType = row["DocumentType"]?.ToString() ?? "";
+                        var FileType = row["FileType"]?.ToString() ?? "";
+                        var AttachedFile = row["AttachedFile"]?.ToString() ?? "";
+                        var ReferenceID = row["ReferenceID"]?.ToString() ?? "";
+                        //var Receivedby = row["Receivedby"]?.ToString() ?? "";
+
+                        var documentlist = new documentlist
+                        {
+                            Id = Id,
+                            DocumentName = DocumentName,
+                            Description = Description,
+                            Ordertype = Ordertype,
+                            DocumentType = DocumentType,
+                            FileType = FileType,
+                            AttachedFile = AttachedFile,
+                            ReferenceID = ReferenceID
+                        };
+
+                        Getdocumentlist.Add(documentlist);
+                    }
+                    Response.statuscode = 200;
+                    Response.status = "success";
+                    Response.documentlist = Getdocumentlist;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Order Not Found";
+                }
+            }
+            catch (Exception ex)
+            {
+                Response.statuscode = 505;
+                Response.status = "Someting Went Wrong";
+            }
+            finally
+            {
+                ds.Dispose();
+            }
+            return Response;
+        }
+
+        public async Task<DataSet> Getdocument(S2SdocumentlistReq para)
+        {
+            Param = new SqlParameter[]
+            {
+                new SqlParameter("@ReferenceID", para.ReferenceID),
+                new SqlParameter("@CompanyID",para.CompanyID),
+                new SqlParameter("@ObjectName",para.ObjectName)
+            };
+            return Return_dataset("GetDocumentlist", Param);
+
+        }
 
         public DataSet Return_dataset(string procname, params SqlParameter[] param)
         {            

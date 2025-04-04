@@ -65,6 +65,18 @@ namespace S2SOMSAPI.Controllers
             var response = await _Driver.RemoveAssignDriver(reqpara);
             return Ok(response);
         }
+        [HttpPost("S2SAssignDriverlist")]
+        public async Task<ActionResult> S2SAssignDriverlist(AssignDriverlistReq reqpara)
+        {
+            var response = await _Driver.AssignDriverlist(reqpara);
+            return Ok(response);
+        }
+        [HttpPost("S2Sdocumentlist")]
+        public async Task<ActionResult> S2Sdocumentlist(S2SdocumentlistReq reqpara)
+        {
+            var response = await _Injection.S2Sdocumentlist(reqpara);
+            return Ok(response);
+        }
 
     }
 }
