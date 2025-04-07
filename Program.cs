@@ -1,7 +1,15 @@
+using Microsoft.Extensions.DependencyInjection;
 using S2SOMSAPI.Repository;
 using S2SOMSAPI.Repository.Interface;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register DbCommonFunctions (for ADO.NET)
+builder.Services.AddScoped<CommonDBFunctionRepo>(provider =>
+    new CommonDBFunctionRepo(builder.Configuration.GetConnectionString("GWC_ConnectionString")));
 
 // Add services to the container.
 

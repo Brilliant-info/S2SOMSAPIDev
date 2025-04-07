@@ -1,42 +1,36 @@
 ﻿using S2SOMSAPI.Model;
 using System.Data;
-using System.Data.SqlClient;
-using System.Data.Common;
 using S2SOMSAPI.Repository.Interface;
+using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Http;
 
 namespace S2SOMSAPI.Repository
 {
     public class S2SOrderHistoryRepo : IS2SOrderHistory
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _connstr;
-        public S2SOrderHistoryReq reqpara;
-        DataSet ds = new DataSet();
-
-        SqlParameter[] Param;
-        
-        public S2SOrderHistoryRepo(IConfiguration configuration)
+        private readonly CommonDBFunctionRepo _commonDBFunctionRepo;
+        SqlParameter[] Param = new SqlParameter[0];
+        public S2SOrderHistoryRepo(CommonDBFunctionRepo commonDBFunctionRepo)
         {
-            _configuration = configuration;
-            _connstr = configuration.GetConnectionString("GWC_ConnectionString");
+            _commonDBFunctionRepo = commonDBFunctionRepo;
         }
 
         public async Task<S2SOrderHistoryResp> S2SOrderHistory(S2SOrderHistoryReq reqpara)
         {
             var Response = new S2SOrderHistoryResp();
             var OrderhistoryList = new List<S2SOrderHistories>();
+            DataSet ds = new DataSet();
             try
-            {
-                
+            {                
                 ds = await FetchHistory(reqpara);
                 if (ds != null && ds.Tables[0].Rows.Count > 0) 
                 {
                     foreach (DataRow row in ds.Tables[0].Rows)
                     {
-                        var S2SOrderNo = row["S2SOrderNo"].ToString();
-                        var Status = row["status"].ToString();
+                        var S2SOrderNo = row["S2SOrderNo"]?.ToString() ?? string.Empty;
+                        var Status = row["status"]?.ToString() ?? string.Empty;
                         DateTime Date = Convert.ToDateTime(row["Date"]);
-                        var Updatedby = row["UserId"].ToString();
+                        var Updatedby = row["UserId"]?.ToString() ?? string.Empty;
 
                         var S2SOrderHistories = new S2SOrderHistories
                         {
@@ -45,24 +39,26 @@ namespace S2SOMSAPI.Repository
                             Date = Date,
                             Updatedby = Updatedby
                         };
-
                         OrderhistoryList.Add(S2SOrderHistories);
                     }
-
-                    int statuscode = 200;
-                    string status = "success";
-                    Response.statuscode = statuscode;
-                    Response.status = status;
+                    Response.statuscode = 200;
+                    Response.status = "success";
                     Response.S2SOrderHistories = OrderhistoryList;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Data Not Found.";
                 }
             }
             catch 
-            { 
-
+            {
+                Response.statuscode = 601;
+                Response.status = "Someting went wrong.";
             }
             finally
             {
-
+                ds.Dispose();
             }
             return Response;
         }
@@ -73,44 +69,7 @@ namespace S2SOMSAPI.Repository
             {
                 new SqlParameter("S2SOrderNO",reqpara.S2SOrderNO)
             };
-            return Return_dataset("S2SOrderHistory", Param);
-        }
-
-        public DataSet Return_dataset(string procname, params SqlParameter[] param)
-        {
-            
-            using SqlConnection conn = new SqlConnection(_connstr);
-            try
-            {
-                SqlDataAdapter da = new SqlDataAdapter(procname, conn);
-                da.SelectCommand.CommandType = CommandType.StoredProcedure;
-                if (param != null)
-                {
-                    foreach (SqlParameter p in param)
-                    {
-                        da.SelectCommand.Parameters.Add(p);
-                    }
-                }
-                //conn.Open();
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-                da.Fill(ds);
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            finally
-            {
-                if (conn.State == ConnectionState.Open)
-                {
-                    conn.Close();
-                }
-            }
-            return ds;
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("S2SOrderHistory", Param);
         }
     }
     

@@ -4,6 +4,7 @@
     {
         public int statuscode { get; set; }
         public string status { get; set; }
+        public int TotalRecords { get; set; }
         public List<S2SOrders> S2SOrders { get; set; }
     }
 

@@ -8,7 +8,8 @@ namespace S2SOMSAPI.Repository
 {
     public class S2SOMSOrdersRepo : IS2SOMSOrders
     {
-        private readonly IConfiguration _configuration;
+        // Old Code
+        /*private readonly IConfiguration _configuration;
         private readonly string _connstr;
 
         public S2SOrderListReq para;
@@ -18,7 +19,17 @@ namespace S2SOMSAPI.Repository
         {
             _configuration = configuration;
             _connstr = _configuration.GetConnectionString("GWC_ConnectionString")!;
+        }*/
+
+        // New Code
+        private readonly CommonDBFunctionRepo _commonDBFunctionRepo;
+
+        SqlParameter[] Param = new SqlParameter[0];
+        public S2SOMSOrdersRepo(CommonDBFunctionRepo commonDBFunctionRepo)
+        {
+            _commonDBFunctionRepo = commonDBFunctionRepo;
         }
+
 
         DataSet ds = new DataSet();
         string S2SOrderNo = "", WincashOrderNo = "", Ordertype = "", Sourcestore = "", DestinationStore = "", Performedby = "", Receivedby = "";
@@ -31,7 +42,7 @@ namespace S2SOMSAPI.Repository
                 ds = await GetOrders(para);
                 if (ds != null && ds.Tables.Count > 0 && ds.Tables[1].Rows.Count > 0)
                 {
-                    
+                    Response.TotalRecords = int.Parse(ds.Tables[0].Rows[0]["TotalRecord"]?.ToString()!);
                     foreach (DataRow row in ds.Tables[1].Rows)
                     {
                         var Id = row["Id"]?.ToString() ?? "";
@@ -91,7 +102,7 @@ namespace S2SOMSAPI.Repository
                 new SqlParameter("@Search",para.Search),
                 new SqlParameter("@Filter",para.Filter)
             };
-            return Return_dataset("GetS2SOrderList", Param);
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("GetS2SOrderList", Param);
 
         }
 
@@ -160,43 +171,10 @@ namespace S2SOMSAPI.Repository
                 new SqlParameter("@CompanyID",para.CompanyID),
                 new SqlParameter("@ObjectName",para.ObjectName)
             };
-            return Return_dataset("GetDocumentlist", Param);
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("GetDocumentlist", Param);
 
         }
 
-        public DataSet Return_dataset(string procname, params SqlParameter[] param)
-        {            
-            using SqlConnection conn = new SqlConnection(_connstr);
-            try
-            {
-                SqlDataAdapter da = new SqlDataAdapter(procname, conn);
-                da.SelectCommand.CommandType = CommandType.StoredProcedure;
-                if (param != null)
-                {
-                    foreach (SqlParameter p in param)
-                    {
-                        da.SelectCommand.Parameters.Add(p);
-                    }
-                }
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-                da.Fill(ds);
-
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            finally 
-            {
-                if (conn.State == ConnectionState.Open)
-                {
-                    conn.Close();
-                } 
-            }
-            return ds;
-        }
+       
     }
 }

@@ -10,28 +10,26 @@ namespace S2SOMSAPI.Repository
 {
     public class S2SOrderDriverlistRepo : IS2SOrderDriverlist
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _connstr;
-        public DriverlistReq reqpara;
-        public AssignDriverReq AssignReq;
-        //public AssignDriverlistReq reqpara;
+       // public DriverlistReq reqpara;
+       // public AssignDriverReq AssignReq;
+       //public AssignDriverlistReq reqpara;
 
-        DataSet ds = new DataSet();
+        
+        private readonly CommonDBFunctionRepo _commonDBFunctionRepo;
 
-        SqlParameter[] Param;
-
-        public S2SOrderDriverlistRepo(IConfiguration configuration)
+        SqlParameter[] Param = new SqlParameter[0];
+        public S2SOrderDriverlistRepo(CommonDBFunctionRepo commonDBFunctionRepo)
         {
-            _configuration = configuration;
-            _connstr = configuration.GetConnectionString("GWC_ConnectionString")!;
+            _commonDBFunctionRepo = commonDBFunctionRepo;
         }
         public async Task<S2SOrderDriverlistResp> Driverlist(DriverlistReq reqpara)
         {
             var Response = new S2SOrderDriverlistResp();
             var Driverlist = new List<S2SOrderDriverlist>();
+            
             try
             {
-                ds = await GetDriverlist(reqpara);
+              var ds = await GetDriverlist(reqpara);
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
                     foreach (DataRow row in ds.Tables[0].Rows)
@@ -80,10 +78,10 @@ namespace S2SOMSAPI.Repository
                 new SqlParameter("CompanyID",reqpara.CompanyID),
                 new SqlParameter("UserID",reqpara.UserID)
             };
-            return Return_dataset("GetDriverlist",Param);
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("GetDriverlist",Param);
         }
 
-        public DataSet Return_dataset(string procname, params SqlParameter[] param)
+       /* public DataSet Return_dataset(string procname, params SqlParameter[] param)
         {
             SqlConnection conn = new SqlConnection(_connstr);
             try
@@ -115,7 +113,7 @@ namespace S2SOMSAPI.Repository
                 }
             }
             return ds;
-        }
+        }*/
 
 
         #region New Code for Driver Assign
@@ -126,14 +124,14 @@ namespace S2SOMSAPI.Repository
             {
                 string result = "";
                 Param = new SqlParameter[]
-                    {
-            new SqlParameter("@ObjectName", AssignReq.ObjectName),
-            new SqlParameter("@ReferenceID", AssignReq.ReferenceID),
-            new SqlParameter("@DriverId", AssignReq.DriverId),
-            new SqlParameter("@AssignBy", AssignReq.AssignBy),
-            new SqlParameter("@VehicleDetail", AssignReq.VehicleDetail),
+                {
+                new SqlParameter("@ObjectName", AssignReq.ObjectName),
+                new SqlParameter("@ReferenceID", AssignReq.ReferenceID),
+                new SqlParameter("@DriverId", AssignReq.DriverId),
+                new SqlParameter("@AssignBy", AssignReq.AssignBy),
+                new SqlParameter("@VehicleDetail", AssignReq.VehicleDetail),
                 };
-                result = await Return_ScalerValues("S2S_AssignDriver", Param);
+                result = await _commonDBFunctionRepo.ReturnScalerValuesAsync("S2S_AssignDriver", Param);
 
                 if (result == "Success")
                 {
@@ -172,11 +170,11 @@ namespace S2SOMSAPI.Repository
                 string result = "";
                 Param = new SqlParameter[]
                     {
-            new SqlParameter("@ObjectName", RemoveReq.ObjectName),
-            new SqlParameter("@ReferenceID", RemoveReq.ReferenceID),
-            new SqlParameter("@DriverId", RemoveReq.DriverId),
+                 new SqlParameter("@ObjectName", RemoveReq.ObjectName),
+                 new SqlParameter("@ReferenceID", RemoveReq.ReferenceID),
+                 new SqlParameter("@DriverId", RemoveReq.DriverId),
                 };
-                result = await Return_ScalerValues("S2S_RemoveAssignedDriver", Param);
+                result = await _commonDBFunctionRepo.ReturnScalerValuesAsync("S2S_RemoveAssignedDriver", Param);
 
                 if (result == "Success")
                 {
@@ -207,58 +205,11 @@ namespace S2SOMSAPI.Repository
             return Response;
         }
 
-        public async Task<string> Return_ScalerValues(string ProcName, params SqlParameter[] Param)
-        {
-            string result = "";
-            using (SqlConnection conn = new SqlConnection(_connstr))
-            {
-                try
-                {
-                    SqlCommand cmd = new SqlCommand(ProcName, conn);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    if (Param != null)
-                    {
-                        foreach (SqlParameter p in Param)
-                        {
-                            cmd.Parameters.Add(p);
-                        }
-                    }
-                    if (conn.State == ConnectionState.Closed)
-                    {
-                        await conn.OpenAsync();
-                    }
-                    var returnval = cmd.ExecuteScalar();
-                    if (returnval != null)
-                    {
-                        result = returnval.ToString();
-                    }
-                    else
-                    {
-                        result = "Fail";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return ex.Message;
-                }
-                finally
-                {
-                    if (conn.State == ConnectionState.Open)
-                    {
-                        await conn.CloseAsync();
-                    }
-                }
-            }
-            return result;
-        }
-
-
-        #endregion
-
         public async Task<S2SAssignDriverlistResp> AssignDriverlist(AssignDriverlistReq reqpara)
         {
             var Response = new S2SAssignDriverlistResp();
             var ADriverlist = new List<S2SDriverlist>();
+            DataSet ds = new DataSet();
             try
             {
                 ds = await GetAssignDriverlist(reqpara);
@@ -267,7 +218,7 @@ namespace S2SOMSAPI.Repository
                     foreach (DataRow row in ds.Tables[0].Rows)
                     {
                         var Id = row["Id"]?.ToString() ?? "";
-                        var AssignDate = row["AssignDate"]?.ToString() ?? ""; 
+                        var AssignDate = row["AssignDate"]?.ToString() ?? "";
                         var DriverId = row["DriverId"]?.ToString() ?? "";
                         var DriverName = row["DriverName"]?.ToString() ?? "";
                         var TrackDetails = row["TrackDetails"]?.ToString() ?? "";
@@ -302,7 +253,7 @@ namespace S2SOMSAPI.Repository
             }
             finally
             {
-
+                ds.Dispose();
             }
             return Response;
         }
@@ -314,8 +265,58 @@ namespace S2SOMSAPI.Repository
                 new SqlParameter("ReferenceID",reqpara.ReferenceID),
                 new SqlParameter("objectName",reqpara.objectName)
             };
-            return Return_dataset("AssignDriverlist", Param);
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("AssignDriverlist", Param);
         }
+
+        /* public async Task<string> Return_ScalerValues(string ProcName, params SqlParameter[] Param)
+         {
+             string result = "";
+             using (SqlConnection conn = new SqlConnection(_connstr))
+             {
+                 try
+                 {
+                     SqlCommand cmd = new SqlCommand(ProcName, conn);
+                     cmd.CommandType = CommandType.StoredProcedure;
+                     if (Param != null)
+                     {
+                         foreach (SqlParameter p in Param)
+                         {
+                             cmd.Parameters.Add(p);
+                         }
+                     }
+                     if (conn.State == ConnectionState.Closed)
+                     {
+                         await conn.OpenAsync();
+                     }
+                     var returnval = cmd.ExecuteScalar();
+                     if (returnval != null)
+                     {
+                         result = returnval.ToString();
+                     }
+                     else
+                     {
+                         result = "Fail";
+                     }
+                 }
+                 catch (Exception ex)
+                 {
+                     return ex.Message;
+                 }
+                 finally
+                 {
+                     if (conn.State == ConnectionState.Open)
+                     {
+                         await conn.CloseAsync();
+                     }
+                 }
+             }
+             return result;
+         }*/
+
+
+        #endregion
+
+
 
     }
 
