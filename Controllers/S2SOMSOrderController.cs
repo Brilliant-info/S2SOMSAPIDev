@@ -78,5 +78,11 @@ namespace S2SOMSAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost("CancelS2SOrder")]
+        public async Task<ActionResult> CancelS2SOrder(CancelOrderReq CancReq)
+        {
+            var response = await _OrderView.CancelS2SOrder(CancReq);
+            return Ok(response);
+        }
     }
 }

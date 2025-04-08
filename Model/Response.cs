@@ -117,5 +117,11 @@
         public string AttachedFile { get; set; }
         public string ReferenceID { get; set; }
     }
+    public class CancelOrderResp
+    {
+        public int statuscode { get; set; }
+        public string status { get; set; }
+    }
+
 }
 

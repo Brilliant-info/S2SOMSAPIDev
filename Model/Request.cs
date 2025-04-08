@@ -65,4 +65,11 @@ namespace S2SOMSAPI.Model
         public int CompanyID { get; set; }
         public string ObjectName { get; set; }
     }
+
+    public class CancelOrderReq
+    {
+        public long OrderID { get; set; }
+        public long UserID { get; set; }    
+    }
+
 }

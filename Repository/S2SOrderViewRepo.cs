@@ -82,6 +82,31 @@ namespace S2SOMSAPI.Repository
             return response;
         }
 
+        public async Task<CancelOrderResp> CancelS2SOrder(CancelOrderReq CancReq)
+        {
+            var CancelResponce = new CancelOrderResp();
+            string Result = "";
+
+            Param = new SqlParameter[]
+            {
+            new SqlParameter("@ID", CancReq.OrderID),
+            new SqlParameter("@UserID", CancReq.UserID)
+            };
+            Result = await _commonDBFunctionRepo.ReturnScalerValuesAsync("S2S_CancelS2SOrder", Param);
+            if (Result == "Success")
+            {
+                CancelResponce.statuscode = 200;
+                CancelResponce.status = "Removed Successfully.";
+            }
+            else
+            {
+                CancelResponce.statuscode = 201;
+                CancelResponce.status = "Error Occured.";
+            }
+
+            return CancelResponce;
+        }
+
         public async Task<DataSet> fetchOrder(S2SOrderViewReq req)
         {
             var ds = new DataSet();
