@@ -32,7 +32,9 @@ namespace S2SOMSAPI.Repository
                     string DestinationStore = ds.Tables[0].Rows[0]["DestinationStore"]?.ToString() ?? string.Empty;
                     string Performedby = ds.Tables[0].Rows[0]["Performedby"]?.ToString() ?? string.Empty;
                     string Receivedby = ds.Tables[0].Rows[0]["Receivedby"]?.ToString() ?? string.Empty;
-                    DateTime CreationDate = Convert.ToDateTime(ds.Tables[0].Rows[0]["CreationDate"]);
+                    string CreationDate = Convert.ToDateTime(ds.Tables[0].Rows[0]["CreationDate"]).Date.ToString("yyyy-MM-dd");
+                    //string CreationDate = Convert.ToDateTime(ds.Tables[0].Rows[0]["CreationDate"]).Date.ToString("yyyy-MM-dd");
+
 
                     // Assign fetched values to the response object
                     response.WincashOrderNo = WincashOrderNumber;

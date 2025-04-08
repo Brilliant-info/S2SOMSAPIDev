@@ -48,7 +48,7 @@
         public string DestinationStore { get; set; }
         public string Performedby { get; set; }
         public string Receivedby { get; set; }
-        public DateTime CreationDate { get; set; }
+        public string CreationDate { get; set; }
         public List<Skulist> Skulist { get; set; }
     }
 
