@@ -72,4 +72,12 @@ namespace S2SOMSAPI.Model
         public long UserID { get; set; }    
     }
 
+    public class S2SOrderReportReq
+    {
+        public string OrderNo { get; set; }
+        public DateTime fromDate { get; set; }
+        public DateTime toDate { get; set; }
+        public string Status { get; set; }
+    }
+
 }

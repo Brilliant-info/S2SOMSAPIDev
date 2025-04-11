@@ -123,5 +123,28 @@
         public string status { get; set; }
     }
 
+    public class S2SOrderReportResp
+    {
+        public int statuscode { get; set; }
+        public string status { get; set; }
+        public List<S2SOrderReportlist> S2SOrderReportlist { get; set; }
+    }
+
+
+    public class S2SOrderReportlist
+    {
+        public string OMSOrderNo { get; set; }
+        public string WinCashOrderNumber { get; set; }
+        public string Status {  get; set; }
+        public string SourceStoreName { get;set; }
+        public string DestinationStoreName { get; set; }
+        public string Performedby { get; set; }
+        public string Receivedby { get; set; }
+        public string SKU { get; set; }
+        public string Description { get; set; }
+        public string Serialnumber { get; set; }
+        public int Quantity { get; set; }
+    }
+
 }
 

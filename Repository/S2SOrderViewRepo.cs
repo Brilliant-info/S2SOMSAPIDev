@@ -116,5 +116,63 @@ namespace S2SOMSAPI.Repository
             };
             return await _commonDBFunctionRepo.ReturnDatasetAsync("GetOrderView", Param);
         }
+
+        public async Task<S2SOrderReportResp> S2SOrderReportRepo(S2SOrderReportReq RepoReq)
+        {
+            var orderlist = new List<S2SOrderReportlist>();
+            var Response = new S2SOrderReportResp();
+            try
+            {
+                DataSet ds = new DataSet();
+                ds = await GetS2SorderRepoList(RepoReq);
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    foreach (DataRow row in ds.Tables[0].Rows)
+                    {
+                        var S2Sorderrepo = new S2SOrderReportlist();
+                        {
+                            S2Sorderrepo.OMSOrderNo = row["OMSOrderNo"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.WinCashOrderNumber = row["WinCashOrderNumber"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Status = row["Status"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.SourceStoreName = row["SourceStoreName"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.DestinationStoreName = row["DestinationStoreName"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Performedby = row["Performedby"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Receivedby = row["Receivedby"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.SKU = row["SKU"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Description = row["Description"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Serialnumber = row["Serialnumber"]?.ToString() ?? string.Empty;
+                            S2Sorderrepo.Quantity = int.Parse(row["Quantity"]?.ToString() ?? "0");
+                        }
+                        orderlist.Add(S2Sorderrepo);
+                    }
+                    Response.statuscode = 200;
+                    Response.status = "success";
+                    Response.S2SOrderReportlist = orderlist;
+                }
+                else
+                {
+                    Response.statuscode = 404;
+                    Response.status = "Records Not Found.";
+                }
+            }
+            catch (Exception ex) 
+            {
+                Response.statuscode = 601;
+                Response.status = "Something went wrong.";
+            }
+            return Response;
+        }
+
+        public async Task<DataSet> GetS2SorderRepoList(S2SOrderReportReq para)
+        {
+            Param = new SqlParameter[]
+            {
+                new SqlParameter("@OrderNo", para.OrderNo),
+                new SqlParameter("@fromDate",para.fromDate),
+                new SqlParameter("@toDate",para.toDate),
+                new SqlParameter("@Status",para.Status)
+            };
+            return await _commonDBFunctionRepo.ReturnDatasetAsync("S2S_S2SOrderReport", Param);
+        }
     }
 }

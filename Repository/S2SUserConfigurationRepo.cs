@@ -2,6 +2,7 @@
 using S2SOMSAPI.Repository.Interface;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace S2SOMSAPI.Repository
 {

@@ -6,5 +6,7 @@ namespace S2SOMSAPI.Repository.Interface
     {
         public Task<S2SOrderViewResp> OrderView(S2SOrderViewReq req);
         public Task<CancelOrderResp> CancelS2SOrder(CancelOrderReq CancReq);
+
+        public Task<S2SOrderReportResp> S2SOrderReportRepo(S2SOrderReportReq RepoReq);
     }
 }
